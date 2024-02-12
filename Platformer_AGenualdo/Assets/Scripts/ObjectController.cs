@@ -8,6 +8,8 @@ public class ObjectController : MonoBehaviour
     void Start()
     {
         INSTANCE = this;
+        LoadBarriers();
+        
     }
 
     // Update is called once per frame
@@ -20,14 +22,24 @@ public class ObjectController : MonoBehaviour
     [SerializeField] Vector3 mouseStartPos = Vector3.zero;
     [SerializeField] GameObject selectedObject = null;
     [SerializeField] Vector3 selectedObjectStartPos = Vector3.zero;
+    [SerializeField] List<GameObject> barriers = new List<GameObject>();
 
     public static ObjectController INSTANCE;
 
     private void OnMouseDown()
     {
+
         
 
+    }
 
+    private void LoadBarriers()
+    {
+        GameObject[] objects = GameObject.FindGameObjectsWithTag("Barrier");
+        for(int i = 0; i < objects.Length; i++)
+        {
+            barriers.Add(objects[i]);
+        }
     }
 
     
@@ -36,10 +48,21 @@ public class ObjectController : MonoBehaviour
     {
         if (Input.GetMouseButton(0))
         {
+            foreach (GameObject barrier in barriers)
+            {
+                BoxCollider2D bc = barrier.GetComponent<BoxCollider2D>();
+                Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                if (bc.bounds.Contains(mousePos))
+                {
+                    return;
+                }
+            }
             //Mouse Down Event
             if (!wasMouseDown)
             {
                 mouseStartPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                
+                
                 mouseStartPos.z = 0;
                 GameObject[] objects = GameObject.FindGameObjectsWithTag("Moveable");
                 for (int i = 0; i < objects.Length; i++)

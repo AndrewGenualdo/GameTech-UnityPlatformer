@@ -25,64 +25,101 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        movePlayer();
+        hasJumped = false;
+        hasBounced = false;
+        MovePlayer();
         LookAtMouse();
 
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            SceneManager.LoadScene(levelAfter);
-        } else if(Input.GetKeyDown(KeyCode.LeftArrow))
+            Persistent.SwitchScene(levelAfter);
+        } 
+        else if(Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            SceneManager.LoadScene(levelBefore);
+            Persistent.SwitchScene(levelBefore);
+        } 
+        else if(Input.GetKeyDown(KeyCode.R))
+        {
+            Persistent.SwitchScene("Menu");
         }
 
     }
 
-    private void movePlayer()
+    private void MovePlayer()
     {
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
         if (ObjectController.INSTANCE.wasMouseDown)
         {
-            rb.velocity = Vector2.zero;
-            return;
+            //rb.velocity = Vector2.zero;
+            //return;
         }
-        
-        SpriteRenderer sr = rb.GetComponent<SpriteRenderer>();
+
         //Camera.main.transform.position = new Vector3(Camera.main.transform.position.x, gameObject.transform.position.y, Camera.main.transform.position.z);
         if (Input.GetKey(KeyCode.D))
         {
             rb.velocity += new Vector2(0.1f, 0);
+            Persistent.hasMoved = true;
         }
         if (Input.GetKey(KeyCode.A))
         {
             rb.velocity += new Vector2(-0.1f, 0);
-  
+            Persistent.hasMoved = true;
+
         }
         
         if (Input.GetKey(KeyCode.S))
         {
             rb.velocity += new Vector2(0, -0.1f);
+            Persistent.hasMoved = true;
         }
         
     }
 
     private void OnCollisionStay2D(Collision2D collision)
     {
-        if(collision.gameObject.name.Contains("FLOOR"))
+        Jump(collision);
+        Bounce(collision);
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        Jump(collision);
+        Bounce(collision);
+    }
+
+    private bool hasJumped = false;
+    private bool hasBounced = false;
+
+    private void Jump(Collision2D collision)
+    {
+        if(hasJumped)
+        {
+            return;
+        }
+        if (collision.gameObject.name.Contains("FLOOR"))
         {
             if (Input.GetKey(KeyCode.W))
             {
                 Rigidbody2D rb = GetComponent<Rigidbody2D>();
                 rb.velocity += new Vector2(0, 10);
+                hasJumped = true;
+                Persistent.hasMoved = true;
                 return;
             }
         }
     }
 
+    
+    
+
     [SerializeField] float bounceStrength = 20.0f;
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void Bounce(Collision2D collision)
     {
-        if(collision.gameObject.name.StartsWith("BOUNCY"))
+        if (hasBounced)
+        {
+            return;
+        }
+        if (collision.gameObject.name.StartsWith("BOUNCY"))
         {
             Rigidbody2D rb = GetComponent<Rigidbody2D>();
             if (collision.gameObject.name.Contains("WALL"))
@@ -97,15 +134,16 @@ public class PlayerController : MonoBehaviour
                 float velY = Mathf.Max(bounceStrength * (Input.GetKey(KeyCode.W) ? 1 : 0.5f), -rb.velocity.y);
                 rb.velocity += new Vector2(rb.velocity.x, velY);
             }
-            
-        } 
+            hasBounced = true;
+
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.name.Equals("Checkpoint"))
         {
-            SceneManager.LoadScene(levelAfter);
+            Persistent.SwitchScene(levelAfter);
         }
     }
 
