@@ -1,10 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
+    [SerializeField] float bounceStrength = 20.0f;
+    [SerializeField] float maxXVel = 35.0f;
+
     [SerializeField] string levelBefore;
     [SerializeField] string levelAfter;
 
@@ -15,11 +20,18 @@ public class PlayerController : MonoBehaviour
     [SerializeField] Sprite left;
     [SerializeField] Sprite right;
 
+    [SerializeField] public float timeUntilWarning;
+
+    GameObject hintText;
 
     // Start is called before the first frame update
     void Start()
     {
-
+        if(Persistent.scene == "Level1")
+        {
+            hintText = GameObject.Find("Canvas/HintText");
+            hintText.SetActive(false);
+        }
     }
 
     // Update is called once per frame
@@ -38,11 +50,24 @@ public class PlayerController : MonoBehaviour
         {
             Persistent.SwitchScene(levelBefore);
         } 
-        else if(Input.GetKeyDown(KeyCode.R))
+        else if(Input.GetKeyDown(KeyCode.Escape))
         {
             Persistent.SwitchScene("Menu");
         }
-
+        if(Persistent.scene == "Level1")
+        {
+            timeUntilWarning -= Time.deltaTime;
+            if (timeUntilWarning < 0 && !Persistent.hasMoused)
+            {
+                hintText.SetActive(true);
+            }
+            else
+            {
+                hintText.SetActive(false);
+            }
+        }
+        
+        
     }
 
     private void MovePlayer()
@@ -57,14 +82,15 @@ public class PlayerController : MonoBehaviour
         //Camera.main.transform.position = new Vector3(Camera.main.transform.position.x, gameObject.transform.position.y, Camera.main.transform.position.z);
         if (Input.GetKey(KeyCode.D))
         {
-            rb.velocity += new Vector2(0.1f, 0);
+            //rb.velocity += new Vector2(0.1f, 0);
+            rb.velocity = new Vector2(Mathf.Min(rb.velocity.x + 0.1f, maxXVel), rb.velocity.y);
             Persistent.hasMoved = true;
         }
         if (Input.GetKey(KeyCode.A))
         {
-            rb.velocity += new Vector2(-0.1f, 0);
+            //rb.velocity += new Vector2(-0.1f, 0);
+            rb.velocity = new Vector2(Mathf.Max(rb.velocity.x - 0.1f, -maxXVel), rb.velocity.y);
             Persistent.hasMoved = true;
-
         }
         
         if (Input.GetKey(KeyCode.S))
@@ -100,10 +126,17 @@ public class PlayerController : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.W))
             {
-                Rigidbody2D rb = GetComponent<Rigidbody2D>();
-                rb.velocity += new Vector2(0, 10);
-                hasJumped = true;
-                Persistent.hasMoved = true;
+                BoxCollider2D playerBc = gameObject.GetComponent<BoxCollider2D>();
+                BoxCollider2D floorBc = collision.gameObject.GetComponent<BoxCollider2D>();
+                //check if player is on top of floor (no jumping on walls)
+                if(transform.position.y - (transform.localScale.y * playerBc.size.y / 2) > collision.transform.position.y + (collision.transform.localScale.y * floorBc.size.y / 2) - 0.05)
+                {
+                    Rigidbody2D rb = GetComponent<Rigidbody2D>();
+                    rb.velocity += new Vector2(0, 10);
+                    hasJumped = true;
+                    Persistent.hasMoved = true;
+                }
+                
                 return;
             }
         }
@@ -112,7 +145,7 @@ public class PlayerController : MonoBehaviour
     
     
 
-    [SerializeField] float bounceStrength = 20.0f;
+
     private void Bounce(Collision2D collision)
     {
         if (hasBounced)
@@ -130,9 +163,14 @@ public class PlayerController : MonoBehaviour
             }
             else
             {
-
-                float velY = Mathf.Max(bounceStrength * (Input.GetKey(KeyCode.W) ? 1 : 0.5f), -rb.velocity.y);
-                rb.velocity += new Vector2(rb.velocity.x, velY);
+                BoxCollider2D playerBc = gameObject.GetComponent<BoxCollider2D>();
+                BoxCollider2D floorBc = collision.gameObject.GetComponent<BoxCollider2D>();
+                if (transform.position.y - (transform.localScale.y * playerBc.size.y / 2) > collision.transform.position.y + (collision.transform.localScale.y * floorBc.size.y / 2) - 0.05)
+                {
+                    float velY = Mathf.Max(bounceStrength * (Input.GetKey(KeyCode.W) ? 1 : 0.5f), -rb.velocity.y);
+                    rb.velocity += new Vector2(rb.velocity.x, velY);
+                }
+                    
             }
             hasBounced = true;
 

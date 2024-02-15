@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering.Universal.Internal;
 
 public class ObjectController : MonoBehaviour
 {
@@ -16,6 +17,11 @@ public class ObjectController : MonoBehaviour
     void Update()
     {
         OnMouseActive();
+        Camera.main.orthographicSize -= Input.GetAxis("Mouse ScrollWheel") * 10;
+        if(Camera.main.orthographicSize < 0 )
+        {
+            Camera.main.orthographicSize = 0;
+        }
     }
 
     [SerializeField] public bool wasMouseDown = false;
@@ -60,6 +66,7 @@ public class ObjectController : MonoBehaviour
             //Mouse Down Event
             if (!wasMouseDown)
             {
+                Persistent.hasMoused = true;
                 mouseStartPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 
                 
