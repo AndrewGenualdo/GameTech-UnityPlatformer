@@ -48,12 +48,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b866fd2d9dff9804f88bdf310bc8daeb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bounceStrength: 10
+  maxXVel: 35
+  levelBefore: 
+  levelAfter: 
   neutral: {fileID: 21300000, guid: 1d223662d4b340d46b2a98fb61551279, type: 3}
   up: {fileID: 21300000, guid: 0366fb1754ce5124a9b6506fbefd42e5, type: 3}
   down: {fileID: 21300000, guid: 07196e84a4b27ea4b99bf3b0b4f4f8c4, type: 3}
   left: {fileID: 21300000, guid: 5bf909d9e9d466d49ba743fe631500cd, type: 3}
   right: {fileID: 21300000, guid: f2ef7c854b1cdcb4295753594c9bd5af, type: 3}
-  bounceStrength: 20
+  timeUntilWarning: 0
 --- !u!212 &7712472683783279336
 SpriteRenderer:
   m_ObjectHideFlags: 0

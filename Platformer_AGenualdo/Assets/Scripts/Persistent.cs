@@ -8,7 +8,7 @@ public class Persistent : MonoBehaviour
 
     public static bool hasMoved = false;
     public static bool hasMoused = false;
-    public static string scene = "Level1";
+    public static string scene = "Menu";
 
 
     public static void SwitchScene(string sceneName)
@@ -20,6 +20,12 @@ public class Persistent : MonoBehaviour
         scene = sceneName;
         SceneManager.LoadScene(sceneName);
     }
+
+    public static void ReloadScene()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
     // Start is called before the first frame update
     void Start()
     {

@@ -24,6 +24,8 @@ public class PlayerController : MonoBehaviour
 
     GameObject hintText;
 
+    Vector2 startPos = Vector2.zero;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -32,6 +34,7 @@ public class PlayerController : MonoBehaviour
             hintText = GameObject.Find("Canvas/HintText");
             hintText.SetActive(false);
         }
+        startPos = transform.position;
     }
 
     // Update is called once per frame
@@ -53,6 +56,9 @@ public class PlayerController : MonoBehaviour
         else if(Input.GetKeyDown(KeyCode.Escape))
         {
             Persistent.SwitchScene("Menu");
+        } else if(Input.GetKeyDown(KeyCode.R))
+        {
+            Persistent.ReloadScene();
         }
         if(Persistent.scene == "Level1")
         {
@@ -67,7 +73,12 @@ public class PlayerController : MonoBehaviour
             }
         }
         
-        
+        if(transform.position.y < -50)
+        {
+            transform.position = startPos;
+            Rigidbody2D rb = GetComponent<Rigidbody2D>();
+            rb.velocity = Vector2.zero;
+        }
     }
 
     private void MovePlayer()
@@ -157,7 +168,7 @@ public class PlayerController : MonoBehaviour
             Rigidbody2D rb = GetComponent<Rigidbody2D>();
             if (collision.gameObject.name.Contains("WALL"))
             {
-                float velX = gameObject.transform.position.x > collision.transform.position.x ? Mathf.Max(bounceStrength, -rb.velocity.x) : Mathf.Min(-bounceStrength, -rb.velocity.x);
+                float velX = gameObject.transform.position.x > collision.transform.position.x ? Mathf.Max(bounceStrength, Mathf.Abs(rb.velocity.x)+bounceStrength/4) : Mathf.Min(-bounceStrength, -(Mathf.Abs(rb.velocity.x)+bounceStrength/4));
 
                 rb.velocity = new Vector2(velX, rb.velocity.y + 5.0f);
             }
@@ -165,10 +176,28 @@ public class PlayerController : MonoBehaviour
             {
                 BoxCollider2D playerBc = gameObject.GetComponent<BoxCollider2D>();
                 BoxCollider2D floorBc = collision.gameObject.GetComponent<BoxCollider2D>();
+                //Touching top of bouncer
                 if (transform.position.y - (transform.localScale.y * playerBc.size.y / 2) > collision.transform.position.y + (collision.transform.localScale.y * floorBc.size.y / 2) - 0.05)
                 {
-                    float velY = Mathf.Max(bounceStrength * (Input.GetKey(KeyCode.W) ? 1 : 0.5f), -rb.velocity.y);
-                    rb.velocity += new Vector2(rb.velocity.x, velY);
+                    float velY;
+                    if (Input.GetKey(KeyCode.W))
+                    {
+                        velY = bounceStrength * 0.25f;
+                    } else
+                    {
+                        velY = bounceStrength;
+                    }
+                    rb.velocity = new Vector2(rb.velocity.x, Mathf.Abs(rb.velocity.y)+velY);
+                } 
+                //Touching bottom of bouncer
+                else if(transform.position.y + (transform.localScale.y * playerBc.size.y / 2) < collision.transform.position.y - (collision.transform.localScale.y * floorBc.size.y / 2) + 0.05)
+                {
+                    if(transform.position.x + (transform.localScale.x * playerBc.size.x / 2) > collision.transform.position.x - (collision.transform.localScale.x * floorBc.size.x / 2) + 0.05 && transform.position.x - (transform.localScale.x * playerBc.size.x / 2) < collision.transform.position.x + (collision.transform.localScale.x * floorBc.size.x / 2) - 0.05)
+                    {
+                        float velY = 2.5f * -Mathf.Abs(rb.velocity.y);
+                        rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y + velY);
+                    }
+                    
                 }
                     
             }
