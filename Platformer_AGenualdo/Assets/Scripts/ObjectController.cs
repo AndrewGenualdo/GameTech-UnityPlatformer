@@ -47,6 +47,8 @@ public class ObjectController : MonoBehaviour
     [SerializeField] GameObject selectedObject = null;
     [SerializeField] Vector3 selectedObjectStartPos = Vector3.zero;
     [SerializeField] List<GameObject> barriers = new List<GameObject>();
+    [SerializeField] bool gridSnap = true;
+    [SerializeField] float gridPrecision = 0.1f;
 
     public static ObjectController INSTANCE;
 
@@ -106,7 +108,16 @@ public class ObjectController : MonoBehaviour
             if (selectedObject != null)
             {
                 selectedObject.transform.position = selectedObjectStartPos + (Camera.main.ScreenToWorldPoint(Input.mousePosition) - mouseStartPos);
-                selectedObject.transform.position = new Vector3(selectedObject.transform.position.x, selectedObject.transform.position.y, 0);
+
+                float x = selectedObject.transform.position.x;
+                float y = selectedObject.transform.position.y;
+                if (gridSnap)
+                {
+                    x = Mathf.Round(x * (1f/ gridPrecision)) / (1f / gridPrecision);
+                    y = Mathf.Round(y * (1f / gridPrecision)) / (1f / gridPrecision);
+                }
+
+                selectedObject.transform.position = new Vector3(x, y, 0);
             }
             wasMouseDown = true;
         }
